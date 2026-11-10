@@ -1,0 +1,83 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ACCENTS, type Prefs } from "@/lib/preferences";
+import { loadKeys, saveKeys } from "@/lib/gemini-client";
+import { toast } from "sonner";
+
+function Seg<T extends string>({ value, options, onChange, label }: { value: T; options: { v: T; l: string }[]; onChange: (v: T) => void; label: string }) {
+  return (
+    <fieldset className="space-y-2">
+      <legend className="text-sm font-semibold">{label}</legend>
+      <div className="flex flex-wrap gap-1.5 rounded-lg bg-surface-2 p-1" role="radiogroup">
+        {options.map((o) => (
+          <button key={o.v} type="button" role="radio" aria-checked={value === o.v} onClick={() => onChange(o.v)}
+            className={`flex-1 rounded-md px-3 py-1.5 text-sm transition-app ${value === o.v ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+            {o.l}
+          </button>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+export function SettingsDialog({ open, onOpenChange, prefs, onPrefs, onExport, onClearAll }: {
+  open: boolean; onOpenChange: (o: boolean) => void; prefs: Prefs; onPrefs: (p: Prefs) => void; onExport: () => void; onClearAll: () => void;
+}) {
+  const [keys, setKeys] = useState<string[]>(() => (typeof window === "undefined" ? ["", "", ""] : loadKeys()));
+  const set = <K extends keyof Prefs>(k: K, v: Prefs[K]) => onPrefs({ ...prefs, [k]: v });
+  return (
+    <Dialog open={open} onOpenChange={(o) => { if (o) setKeys(loadKeys()); onOpenChange(o); }}>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto border bg-popover sm:max-w-lg" dir="rtl">
+        <DialogHeader className="text-right">
+          <DialogTitle>الإعدادات</DialogTitle>
+          <DialogDescription>تُحفظ في هذا المتصفح. المزامنة بين الأجهزة تأتي مع تسجيل الدخول في المرحلة القادمة.</DialogDescription>
+        </DialogHeader>
+        <Tabs defaultValue="look" dir="rtl">
+          <TabsList className="grid w-full grid-cols-3 bg-surface-2">
+            <TabsTrigger value="look">المظهر</TabsTrigger>
+            <TabsTrigger value="keys">مفاتيح Gemini</TabsTrigger>
+            <TabsTrigger value="data">البيانات</TabsTrigger>
+          </TabsList>
+          <TabsContent value="look" className="space-y-5 pt-4">
+            <Seg label="السمة" value={prefs.theme} onChange={(v) => set("theme", v)} options={[{ v: "dark", l: "داكن" }, { v: "light", l: "فاتح" }, { v: "system", l: "النظام" }]} />
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-semibold">لون التمييز</legend>
+              <div className="flex gap-3">
+                {ACCENTS.map((a) => (
+                  <button key={a.hue} type="button" aria-label={a.name} aria-pressed={prefs.hue === a.hue} onClick={() => set("hue", a.hue)}
+                    className={`h-9 w-9 rounded-full border-2 transition-app ${prefs.hue === a.hue ? "border-foreground" : "border-transparent"}`}
+                    style={{ background: `oklch(0.75 0.13 ${a.hue})` }} />
+                ))}
+              </div>
+            </fieldset>
+            <Seg label="الخط" value={prefs.font} onChange={(v) => set("font", v)} options={[{ v: "Cairo", l: "Cairo" }, { v: "Tajawal", l: "Tajawal" }, { v: "Inter", l: "Inter" }, { v: "system-ui", l: "النظام" }]} />
+            <fieldset className="space-y-2">
+              <legend className="text-sm font-semibold">حجم النص: {prefs.fontSize}px</legend>
+              <input type="range" min={14} max={20} value={prefs.fontSize} onChange={(e) => set("fontSize", Number(e.target.value))} className="w-full accent-primary" aria-label="حجم النص" />
+            </fieldset>
+            <Seg label="الكثافة" value={prefs.density} onChange={(v) => set("density", v)} options={[{ v: "comfortable", l: "مريحة" }, { v: "compact", l: "مضغوطة" }]} />
+            <Seg label="الحواف" value={prefs.radius} onChange={(v) => set("radius", v)} options={[{ v: "rounded", l: "دائرية" }, { v: "soft", l: "ناعمة" }, { v: "crisp", l: "حادة" }]} />
+            <Seg label="الحركة" value={prefs.motion} onChange={(v) => set("motion", v)} options={[{ v: "system", l: "حسب النظام" }, { v: "reduce", l: "مخفّضة" }]} />
+          </TabsContent>
+          <TabsContent value="keys" className="space-y-3 pt-4">
+            <p className="text-sm text-muted-foreground">اختياري: مفاتيحك الشخصية تفتح نماذج Gemini الأصلية مع التدوير التلقائي عند تجاوز الحد. تبقى في هذا المتصفح فقط ولا تُرسل لخادمنا.</p>
+            {keys.map((k, i) => (
+              <label key={i} className="block space-y-1">
+                <span className="text-sm">المفتاح {i + 1}</span>
+                <input type="password" dir="ltr" autoComplete="off" value={k} onChange={(e) => setKeys(keys.map((x, j) => (j === i ? e.target.value : x)))}
+                  className="w-full rounded-md border bg-surface px-3 py-2 text-sm" placeholder="AIza..." />
+              </label>
+            ))}
+            <button type="button" onClick={() => { saveKeys(keys.map((k) => k.trim())); toast.success("تم حفظ المفاتيح"); }}
+              className="w-full rounded-md bg-primary py-2 font-semibold text-primary-foreground transition-app hover:opacity-90">حفظ المفاتيح</button>
+          </TabsContent>
+          <TabsContent value="data" className="space-y-3 pt-4">
+            <button type="button" onClick={onExport} className="w-full rounded-md border py-2 transition-app hover:bg-accent">تصدير كل المحادثات (JSON)</button>
+            <button type="button" onClick={onClearAll} className="w-full rounded-md border border-destructive/50 py-2 text-destructive transition-app hover:bg-destructive/10">حذف كل المحادثات</button>
+          </TabsContent>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
+}
