@@ -29,8 +29,8 @@ export function migrateLegacy(raw: unknown): Conversation[] {
   if (!Array.isArray(raw)) return [];
   const now = Date.now();
   return raw
-    .filter((c): c is Record<string, unknown> => !!c && typeof c === "object")
-    .map((c, i) => {
+    .filter((c): c is any => !!c && typeof c === "object")
+    .map((c: any, i: number) => {
       const msgs = Array.isArray(c.messages) ? c.messages : [];
       const ts = Number(c.id) > 1e12 ? Number(c.id) : now - i * 1000;
       return {
@@ -100,9 +100,10 @@ export function titleFrom(text: string) {
   return t ? (t.length > 48 ? t.slice(0, 48) + "…" : t) : "محادثة جديدة";
 }
 
+type G = { label: string; items: Conversation[] };
 export function groupChats(chats: Conversation[], now = Date.now()) {
   const day = 86400000;
-  const groups: { label: string; items: Conversation[] }[] = [
+  const groups: [G, G, G, G] = [
     { label: "مثبّتة", items: [] }, { label: "اليوم", items: [] }, { label: "آخر 7 أيام", items: [] }, { label: "أقدم", items: [] },
   ];
   for (const c of [...chats].sort((a, b) => b.updatedAt - a.updatedAt)) {

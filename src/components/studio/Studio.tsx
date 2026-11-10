@@ -23,7 +23,7 @@ export function Studio() {
   const [chats, setChats] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
-  const [model, setModel] = useState(BUILTIN_MODELS[0].id);
+  const [model, setModel] = useState(BUILTIN_MODELS[0]!.id);
   const [input, setInput] = useState("");
   const [files, setFiles] = useState<Attachment[]>([]);
   const [busy, setBusy] = useState(false);

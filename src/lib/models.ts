@@ -20,4 +20,4 @@ export const GEMINI_MODELS: ModelDef[] = [
 ];
 
 export const ALL_MODELS = [...BUILTIN_MODELS, ...GEMINI_MODELS];
-export const findModel = (id: string) => ALL_MODELS.find((m) => m.id === id) ?? BUILTIN_MODELS[0];
+export const findModel = (id: string) => ALL_MODELS.find((m) => m.id === id) ?? BUILTIN_MODELS[0]!;
