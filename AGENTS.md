@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Hazem-Tech Studio
+- Chat UI lives in src/components/studio; data helpers in src/lib (pure, unit-tested in src/test). Why: keeps porting from the original single HTML file incremental.
+- Built-in AI goes through server route /api/chat (src/lib/chat.server.ts); personal Gemini keys stay in the browser and call Google directly. Why: user chose both modes; keys never reach our server.
+- Local chat store is versioned (hazem_studio_chats_v2) and never mutates the legacy hazem_tech_chats key. Why: rollback-safe migration.
