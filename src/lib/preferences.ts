@@ -26,7 +26,7 @@ export function applyPrefs(p: Prefs) {
   r.style.setProperty("--hue", String(p.hue));
   r.style.setProperty("--app-font", p.font === "system-ui" ? "system-ui" : `"${p.font}"`);
   r.style.setProperty("--app-font-size", `${p.fontSize}px`);
-  r.dataset.density = p.density;
-  r.dataset.radius = p.radius;
-  r.dataset.motion = p.motion;
+  r.dataset["density"] = p.density;
+  r.dataset["radius"] = p.radius;
+  r.dataset["motion"] = p.motion;
 }

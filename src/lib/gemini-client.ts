@@ -26,12 +26,13 @@ function pickKey(): string {
   const now = Date.now();
   for (let s = 0; s < 3; s++) {
     const i = (idx + s) % 3;
-    if (keys[i].trim().length >= 20 && (cooldown.get(keys[i]) || 0) <= now) {
+    const k = keys[i] ?? "";
+    if (k.trim().length >= 20 && (cooldown.get(k) || 0) <= now) {
       localStorage.setItem(ACTIVE, String(i));
-      return keys[i];
+      return k;
     }
   }
-  return validKeys(keys)[0];
+  return validKeys(keys)[0]!;
 }
 function rotate(failed: string) {
   const keys = loadKeys();

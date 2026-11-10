@@ -15,14 +15,14 @@ describe("chat storage", () => {
   it("migrates legacy chats using rawText", () => {
     const out = migrateLegacy([{ id: 1700000000000, title: "قديم", messages: [{ role: "user", text: "<b>hi</b>", rawText: "hi" }, { role: "model", text: "<p>hello</p>" }] }]);
     expect(out).toHaveLength(1);
-    expect(out[0].messages.map((m) => [m.role, m.text])).toEqual([["user", "hi"], ["assistant", "hello"]]);
+    expect(out[0]!.messages.map((m) => [m.role, m.text])).toEqual([["user", "hi"], ["assistant", "hello"]]);
   });
   it("ignores non-array legacy data", () => expect(migrateLegacy({ bad: true })).toEqual([]));
   it("returns empty for corrupt JSON", () => expect(parseStore("{not json")).toEqual([]));
   it("handles thousands of chats", () => {
     const chats = Array.from({ length: 3000 }, (_, i) => ({ id: String(i), title: "t", pinned: i === 5, model: "m", messages: [], createdAt: 0, updatedAt: Date.now() - i * 3600_000 }));
     const g = groupChats(chats);
-    expect(g[0].label).toBe("مثبّتة");
+    expect(g[0]!.label).toBe("مثبّتة");
     expect(g.reduce((n, x) => n + x.items.length, 0)).toBe(3000);
   });
 });
