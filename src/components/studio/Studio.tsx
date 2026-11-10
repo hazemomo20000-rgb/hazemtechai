@@ -258,7 +258,7 @@ export function Studio() {
               onChange={(e) => { setInput(e.target.value); e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 220) + "px"; }}
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(); } }}
               onPaste={(e) => { if (e.clipboardData.files.length) { e.preventDefault(); addFiles(e.clipboardData.files); } }}
-              placeholder="اكتب رسالتك… (Enter للإرسال، Shift+Enter لسطر جديد)" aria-label="الرسالة"
+              placeholder="اكتب رسالتك…" title="Enter للإرسال، Shift+Enter لسطر جديد" aria-label="الرسالة"
               className="block max-h-[220px] w-full resize-none bg-transparent px-4 pt-3.5 pb-1 outline-none placeholder:text-muted-foreground" />
             <div className="flex items-center gap-1 px-2 pb-2">
               <input ref={fileRef} type="file" multiple hidden accept="image/png,image/jpeg,image/webp,image/gif,.txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.xml,.yaml,.yml,.sql,.log"
