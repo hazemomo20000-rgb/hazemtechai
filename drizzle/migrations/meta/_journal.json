@@ -8,6 +8,13 @@
       "when": 1794369889525,
       "tag": "0000_studio_profiles_and_private_avatars",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794370085790,
+      "tag": "0001_restrict_profile_trigger_execution",
+      "breakpoints": true
     }
   ]
 }
