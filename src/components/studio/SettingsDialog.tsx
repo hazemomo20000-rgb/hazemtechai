@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ACCENTS, type Prefs } from "@/lib/preferences";
 import { loadKeys, saveKeys } from "@/lib/gemini-client";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 function Seg<T extends string>({ value, options, onChange, label }: { value: T; options: { v: T; l: string }[]; onChange: (v: T) => void; label: string }) {
   return (
@@ -21,17 +22,19 @@ function Seg<T extends string>({ value, options, onChange, label }: { value: T; 
   );
 }
 
-export function SettingsDialog({ open, onOpenChange, prefs, onPrefs, onExport, onClearAll }: {
+export function SettingsDialog({ open, onOpenChange, prefs, onPrefs, sync, onRetry, onExport, onClearAll }: {
   open: boolean; onOpenChange: (o: boolean) => void; prefs: Prefs; onPrefs: (p: Prefs) => void; onExport: () => void; onClearAll: () => void;
+  sync: "local" | "loading" | "saving" | "saved" | "error"; onRetry: () => void;
 }) {
-  const [keys, setKeys] = useState<string[]>(() => (typeof window === "undefined" ? ["", "", ""] : loadKeys()));
+  const [keys, setKeys] = useState<string[]>(["", "", ""]);
   const set = <K extends keyof Prefs>(k: K, v: Prefs[K]) => onPrefs({ ...prefs, [k]: v });
   return (
     <Dialog open={open} onOpenChange={(o) => { if (o) setKeys(loadKeys()); onOpenChange(o); }}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto border bg-popover sm:max-w-lg" dir="rtl">
         <DialogHeader className="text-right">
           <DialogTitle>الإعدادات</DialogTitle>
-          <DialogDescription>تُحفظ في هذا المتصفح. المزامنة بين الأجهزة تأتي مع تسجيل الدخول في المرحلة القادمة.</DialogDescription>
+          <DialogDescription role="status">{sync === "local" ? "التفضيلات محفوظة في هذا المتصفح؛ سجّل الدخول لمزامنتها." : sync === "loading" ? "جارٍ تحميل تفضيلات حسابك…" : sync === "saving" ? "جارٍ حفظ التفضيلات…" : sync === "error" ? "تعذّرت المزامنة. لم يتم تأكيد حفظ التغييرات." : "تفضيلاتك محفوظة في حسابك."}</DialogDescription>
+          {sync === "error" && <Button variant="outline" onClick={onRetry}>إعادة محاولة المزامنة</Button>}
         </DialogHeader>
         <Tabs defaultValue="look" dir="rtl">
           <TabsList className="grid w-full grid-cols-3 bg-surface-2">
@@ -39,7 +42,7 @@ export function SettingsDialog({ open, onOpenChange, prefs, onPrefs, onExport, o
             <TabsTrigger value="keys">مفاتيح Gemini</TabsTrigger>
             <TabsTrigger value="data">البيانات</TabsTrigger>
           </TabsList>
-          <TabsContent value="look" className="space-y-5 pt-4">
+          <TabsContent value="look" className="space-y-5 pt-4"><fieldset disabled={sync === "loading"} className="space-y-5 disabled:opacity-50">
             <Seg label="السمة" value={prefs.theme} onChange={(v) => set("theme", v)} options={[{ v: "dark", l: "داكن" }, { v: "light", l: "فاتح" }, { v: "system", l: "النظام" }]} />
             <fieldset className="space-y-2">
               <legend className="text-sm font-semibold">لون التمييز</legend>
@@ -59,7 +62,7 @@ export function SettingsDialog({ open, onOpenChange, prefs, onPrefs, onExport, o
             <Seg label="الكثافة" value={prefs.density} onChange={(v) => set("density", v)} options={[{ v: "comfortable", l: "مريحة" }, { v: "compact", l: "مضغوطة" }]} />
             <Seg label="الحواف" value={prefs.radius} onChange={(v) => set("radius", v)} options={[{ v: "rounded", l: "دائرية" }, { v: "soft", l: "ناعمة" }, { v: "crisp", l: "حادة" }]} />
             <Seg label="الحركة" value={prefs.motion} onChange={(v) => set("motion", v)} options={[{ v: "system", l: "حسب النظام" }, { v: "reduce", l: "مخفّضة" }]} />
-          </TabsContent>
+          </fieldset></TabsContent>
           <TabsContent value="keys" className="space-y-3 pt-4">
             <p className="text-sm text-muted-foreground">اختياري: مفاتيحك الشخصية تفتح نماذج Gemini الأصلية مع التدوير التلقائي عند تجاوز الحد. تبقى في هذا المتصفح فقط ولا تُرسل لخادمنا.</p>
             {keys.map((k, i) => (
