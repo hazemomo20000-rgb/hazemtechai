@@ -151,3 +151,9 @@
 .prose-chat th, .prose-chat td { border: 1px solid var(--border); padding: .35em .7em; }
 .prose-chat th { background: var(--surface-2); }
 .prose-chat blockquote { border-inline-start: 3px solid var(--primary); padding-inline-start: .8em; color: var(--muted-foreground); }
+
+:root { --google-bg: #131314; --google-border: #8E918F; --google-text: #E3E3E3; }
+.light { --google-bg: #FFFFFF; --google-border: #747775; --google-text: #1F1F1F; }
+.google-sign-in { background: var(--google-bg); border: 1px solid var(--google-border); color: var(--google-text); padding: 0 12px; gap: 10px; font-size: 14px; line-height: 20px; font-weight: 500; }
+.google-sign-in:hover { background: var(--google-bg); color: var(--google-text); opacity: .9; }
+.google-sign-in svg { width: 18px; height: 18px; }

@@ -5,7 +5,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { type Conversation, type Message, groupChats, loadChats, newConversation, saveChats, titleFrom } from "@/lib/chat-store";
 import { type Attachment, MAX_FILES, formatSize, readAttachment } from "@/lib/files";
 import { BUILTIN_MODELS, GEMINI_MODELS, findModel } from "@/lib/models";
-import { DEFAULT_PREFS, type Prefs, applyPrefs, loadPrefs, savePrefs } from "@/lib/preferences";
+import { useStudioPreferences } from "@/hooks/use-studio-preferences";
+import { AccountControl } from "./AccountControl";
 import { streamGemini, validKeys } from "@/lib/gemini-client";
 import { Markdown } from "./Markdown";
 import { SettingsDialog } from "./SettingsDialog";
@@ -22,8 +23,8 @@ export function Studio() {
   const [hydrated, setHydrated] = useState(false);
   const [chats, setChats] = useState<Conversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
-  const [model, setModel] = useState(BUILTIN_MODELS[0]!.id);
+  const { prefs, updatePrefs, sync, retry } = useStudioPreferences();
+  const [model, setModel] = useState(BUILTIN_MODELS[0]?.id ?? "openai/gpt-6-astra");
   const [input, setInput] = useState("");
   const [files, setFiles] = useState<Attachment[]>([]);
   const [busy, setBusy] = useState(false);
@@ -41,7 +42,6 @@ export function Studio() {
   const recRef = useRef<any>(null);
 
   useEffect(() => {
-    const p = loadPrefs(); setPrefs(p); applyPrefs(p);
     setChats(loadChats());
     setOnline(navigator.onLine);
     setHydrated(true);
@@ -51,7 +51,6 @@ export function Studio() {
     return () => { removeEventListener("online", on); removeEventListener("offline", off); };
   }, []);
   useEffect(() => { if (hydrated) saveChats(chats); }, [chats, hydrated]);
-  const updatePrefs = (p: Prefs) => { setPrefs(p); applyPrefs(p); savePrefs(p); };
 
   const active = chats.find((c) => c.id === activeId) ?? null;
   useEffect(() => { endRef.current?.scrollIntoView({ block: "end" }); }, [active?.messages.length, active?.messages.at(-1)?.text]);
@@ -83,7 +82,7 @@ export function Studio() {
     if (m.provider === "gemini" && !validKeys().length) { toast.error("أضف مفتاح Gemini من الإعدادات أولاً."); setSettings(true); return; }
 
     let conv = active;
-    if (!conv) { conv = newConversation(model); setChats((cs) => [conv!, ...cs]); setActiveId(conv.id); }
+    if (!conv) { const created = newConversation(model); conv = created; setChats((cs) => [created, ...cs]); setActiveId(created.id); }
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", text, attachments: files as any, createdAt: Date.now() };
     const botMsg: Message = { id: crypto.randomUUID(), role: "assistant", text: "", createdAt: Date.now() };
     const history = [...conv.messages.filter((x) => !x.error), userMsg];
@@ -210,6 +209,7 @@ export function Studio() {
             </PopoverContent>
           </Popover>
           <span className="flex-1" />
+          <AccountControl />
           <span className={`flex items-center gap-1.5 text-xs ${online ? "text-muted-foreground" : "text-destructive"}`} role="status">
             <span className={`h-2 w-2 rounded-full ${online ? "bg-success" : "bg-destructive"}`} />{online ? "متصل" : "غير متصل"}
           </span>
@@ -278,7 +278,7 @@ export function Studio() {
         {dragging && <div className="pointer-events-none absolute inset-3 grid place-items-center rounded-2xl border-2 border-dashed border-primary bg-background/80 text-lg font-semibold">أفلت الملفات هنا</div>}
       </main>
 
-      <SettingsDialog open={settings} onOpenChange={setSettings} prefs={prefs} onPrefs={updatePrefs} onExport={exportAll} onClearAll={() => setConfirmDel("all")} />
+      <SettingsDialog open={settings} onOpenChange={setSettings} prefs={prefs} onPrefs={updatePrefs} sync={sync} onRetry={retry} onExport={exportAll} onClearAll={() => setConfirmDel("all")} />
       <AlertDialog open={!!confirmDel} onOpenChange={(o) => !o && setConfirmDel(null)}>
         <AlertDialogContent dir="rtl" className="bg-popover">
           <AlertDialogHeader className="text-right">

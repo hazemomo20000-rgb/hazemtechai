@@ -33,3 +33,6 @@ use the editor.
 - Chat UI lives in src/components/studio; data helpers in src/lib (pure, unit-tested in src/test). Why: keeps porting from the original single HTML file incremental.
 - Built-in AI goes through server route /api/chat (src/lib/chat.server.ts); personal Gemini keys stay in the browser and call Google directly. Why: user chose both modes; keys never reach our server.
 - Local chat store is versioned (hazem_studio_chats_v2) and never mutates the legacy hazem_tech_chats key. Why: rollback-safe migration.
+- Account identity has one root auth subscriber; browser profile reads and writes use the generated RLS-scoped client. Why: public chat remains available without sign-in and private account rows stay owner-only.
+- Profile avatars live in a private bucket with owner paths and short-lived signed URLs; uploads are decoded and re-encoded. Why: avoid public personal photos and forged image contents.
+- Signed-in preferences use serialized database writes and owner-scoped realtime invalidation; guest preferences stay separate locally. Why: avoid cross-account leakage and out-of-order saves without syncing personal API keys or conversations.
