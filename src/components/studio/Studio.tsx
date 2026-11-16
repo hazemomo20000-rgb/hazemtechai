@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { TOOL_DRAFT_KEY } from "@/lib/studio-tools";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -43,6 +46,10 @@ export function Studio() {
 
   useEffect(() => {
     setChats(loadChats());
+    try {
+      const raw = sessionStorage.getItem(TOOL_DRAFT_KEY);
+      if (raw) { const draft = JSON.parse(raw); setInput(String(draft.text || "")); if (Array.isArray(draft.files)) setFiles(draft.files); sessionStorage.removeItem(TOOL_DRAFT_KEY); }
+    } catch { sessionStorage.removeItem(TOOL_DRAFT_KEY); }
     setOnline(navigator.onLine);
     setHydrated(true);
     const on = () => setOnline(true), off = () => setOnline(false);
@@ -188,6 +195,7 @@ export function Studio() {
           ))}
         </nav>
         <div className="border-t p-3">
+          <Button variant="ghost" asChild className="w-full justify-start"><Link to="/tools"><I.IconFile width={18} height={18}/>الأدوات والمهارات</Link></Button>
           <button type="button" onClick={() => setSettings(true)} className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm transition-app hover:bg-sidebar-accent">
             <I.IconSettings width={18} height={18} /> الإعدادات
           </button>
