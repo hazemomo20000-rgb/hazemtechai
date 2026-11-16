@@ -5,7 +5,8 @@ import { TOOL_DRAFT_KEY } from "@/lib/studio-tools";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { type Conversation, type Message, groupChats, loadChats, newConversation, saveChats, titleFrom } from "@/lib/chat-store";
+import { type Conversation, type Message, groupChats, newConversation, titleFrom } from "@/lib/chat-store";
+import { useConversations } from "@/hooks/use-conversations";
 import { type Attachment, MAX_FILES, formatSize, readAttachment } from "@/lib/files";
 import { BUILTIN_MODELS, GEMINI_MODELS, findModel } from "@/lib/models";
 import { useStudioPreferences } from "@/hooks/use-studio-preferences";
@@ -24,7 +25,7 @@ const SUGGESTIONS = [
 
 export function Studio() {
   const [hydrated, setHydrated] = useState(false);
-  const [chats, setChats] = useState<Conversation[]>([]);
+  const { chats, setChats, sync: chatSync, retry: retryChats } = useConversations();
   const [activeId, setActiveId] = useState<string | null>(null);
   const { prefs, updatePrefs, sync, retry } = useStudioPreferences();
   const [model, setModel] = useState(BUILTIN_MODELS[0]?.id ?? "openai/gpt-6-astra");
@@ -45,7 +46,6 @@ export function Studio() {
   const recRef = useRef<any>(null);
 
   useEffect(() => {
-    setChats(loadChats());
     try {
       const raw = sessionStorage.getItem(TOOL_DRAFT_KEY);
       if (raw) { const draft = JSON.parse(raw); setInput(String(draft.text || "")); if (Array.isArray(draft.files)) setFiles(draft.files); sessionStorage.removeItem(TOOL_DRAFT_KEY); }
@@ -57,7 +57,6 @@ export function Studio() {
     if (matchMedia("(min-width: 1024px)").matches) setSidebar(true);
     return () => { removeEventListener("online", on); removeEventListener("offline", off); };
   }, []);
-  useEffect(() => { if (hydrated) saveChats(chats); }, [chats, hydrated]);
 
   const active = chats.find((c) => c.id === activeId) ?? null;
   useEffect(() => { endRef.current?.scrollIntoView({ block: "end" }); }, [active?.messages.length, active?.messages.at(-1)?.text]);
@@ -199,7 +198,8 @@ export function Studio() {
           <button type="button" onClick={() => setSettings(true)} className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm transition-app hover:bg-sidebar-accent">
             <I.IconSettings width={18} height={18} /> الإعدادات
           </button>
-          <p className="px-2 pt-1 text-xs text-muted-foreground">المحادثات محفوظة في هذا المتصفح</p>
+          <p role="status" className="px-2 pt-1 text-xs text-muted-foreground">{chatSync}</p>
+          {chatSync.includes("تعذّرت") && <Button variant="link" onClick={retryChats}>إعادة محاولة المزامنة</Button>}
         </div>
       </aside>
 
