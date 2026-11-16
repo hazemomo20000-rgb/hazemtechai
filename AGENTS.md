@@ -36,3 +36,6 @@ use the editor.
 - Account identity has one root auth subscriber; browser profile reads and writes use the generated RLS-scoped client. Why: public chat remains available without sign-in and private account rows stay owner-only.
 - Profile avatars live in a private bucket with owner paths and short-lived signed URLs; uploads are decoded and re-encoded. Why: avoid public personal photos and forged image contents.
 - Signed-in preferences use serialized database writes and owner-scoped realtime invalidation; guest preferences stay separate locally. Why: avoid cross-account leakage and out-of-order saves without syncing personal API keys or conversations.
+- Tools use a browser-safe catalog and a one-time same-origin draft handoff to the existing chat composer. Why: reuse actual AI and attachment execution rather than fake tool results.
+- Account conversation caches are owner-keyed; database saves use revision checks, deletion tombstones and conflict copies. Why: preserve guest storage and avoid overwriting cross-device changes.
+- Device records are attendance metadata, not authoritative Auth sessions; use Auth local/others sign-out scopes for revocation. Why: respect managed Auth boundaries and disclose token expiry delays.

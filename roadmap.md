@@ -4,3 +4,9 @@
 - [ ] Stage 3: Conversation sync to database + conflict handling, sessions/devices
 - [ ] Stage 4: Explore tools page, skills manager, PDF/Office parsing, TTS, Google Docs/PDF export from original
 - [ ] Stage 5: Full English translation (LTR), privacy/notifications settings, QA report, docs
+
+## Current requested sequence
+- [ ] Verify email login/logout on mobile and desktop, and report actual cross-device restoration.
+- [ ] Build tools and skills page with search/categories and working actions before conversation sync.
+- [ ] Implement automatic account-owned conversation sync across devices and session management.
+- [ ] Verify Google configuration and redirect addresses; test mobile/desktop provider flow (actual Google account selection requires the user).

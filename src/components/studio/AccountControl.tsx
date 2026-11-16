@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { validateAvatar } from "@/lib/account-rules";
 import { useAccount } from "./AccountProvider";
 import { useProfile } from "@/hooks/use-profile";
+import { DeviceSessions } from "./DeviceSessions";
 
 export function AccountControl() {
   const { user, ready } = useAccount(); const profile = useProfile();
@@ -56,7 +57,8 @@ export function AccountControl() {
         <form className="space-y-4" onSubmit={async (e) => { e.preventDefault(); setBusy(true); setError(""); try { await update({ display_name: name.trim() }); toast.success("تم حفظ الاسم"); } catch (e) { setError((e as Error).message); } finally { setBusy(false); } }}><label className="block space-y-2">الاسم<Input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required autoComplete="name"/></label><Button type="submit" disabled={busy} className="w-full">{busy ? "جارٍ الحفظ…" : "حفظ الاسم"}</Button></form>
       </>}
       {error && <p role="alert" className="break-words text-sm text-destructive">{error}</p>}
-      <Button variant="outline" disabled={busy} onClick={async () => { setBusy(true); setError(""); try { await queryClient.cancelQueries(); queryClient.clear(); const result = await supabase.auth.signOut(); if (result.error) throw result.error; setOpen(false); await navigate({ to: "/auth", replace: true }); } catch (e) { setError((e as Error).message); } finally { setBusy(false); } }}><LogOut/>تسجيل الخروج</Button>
+      <DeviceSessions/>
+      <Button variant="outline" disabled={busy} onClick={async () => { setBusy(true); setError(""); try { await queryClient.cancelQueries(); queryClient.clear(); const result = await supabase.auth.signOut({ scope: "local" }); if (result.error) throw result.error; setOpen(false); await navigate({ to: "/auth", replace: true }); } catch (e) { setError((e as Error).message); } finally { setBusy(false); } }}><LogOut/>تسجيل الخروج</Button>
     </DialogContent></Dialog>
   </>;
 }
