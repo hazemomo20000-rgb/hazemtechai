@@ -38,12 +38,84 @@ export type Database = {
         }
         Relationships: []
       }
+      studio_conversations: {
+        Row: {
+          deleted: boolean
+          id: string
+          payload: Json
+          revision: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          deleted?: boolean
+          id: string
+          payload: Json
+          revision?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          deleted?: boolean
+          id?: string
+          payload?: Json
+          revision?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      studio_device_sessions: {
+        Row: {
+          device_label: string
+          last_seen: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          device_label: string
+          last_seen?: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          device_label?: string
+          last_seen?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_device_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      save_studio_conversation: {
+        Args: {
+          p_deleted?: boolean
+          p_id: string
+          p_payload: Json
+          p_revision: number
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
