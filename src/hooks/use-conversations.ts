@@ -24,7 +24,8 @@ export function useConversations() {
   }, []);
   useEffect(() => {
     if (!ready) return;
-    const id = user?.id; identity.current = id; initialized.current = false; pending.current = new Map(); running.current = false;
+    const accountId = user?.id; identity.current = accountId; initialized.current = false; pending.current = new Map(); running.current = false;
+    const id = accountId ?? "";
     let alive = true; const revisions = new Map<string, number>();
     const key = id ? `hazem_account_chats_${id}` : "";
     let cached: Conversation[] = [];
