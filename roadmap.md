@@ -6,6 +6,9 @@
 - [ ] Stage 5: Full English translation (LTR), privacy/notifications settings, QA report, docs
 
 ## Current requested sequence
+- [ ] Correct preview errors in conversation synchronization before provider testing.
+- [ ] Add PDF/Office reading, PDF/Google Docs export and real text-to-speech tools.
+- [ ] Document and verify conversation ownership policies and current-device logout.
 - [ ] Verify email login/logout on mobile and desktop, and report actual cross-device restoration.
 - [ ] Build tools and skills page with search/categories and working actions before conversation sync.
 - [ ] Implement automatic account-owned conversation sync across devices and session management.
