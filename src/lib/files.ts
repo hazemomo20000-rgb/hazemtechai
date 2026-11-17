@@ -46,9 +46,10 @@ export function formatSize(n: number) {
 export async function readAttachment(file: File): Promise<Attachment> {
   const c = checkFile(file);
   if (!c.ok) throw new Error(c.error);
-  if (DOCUMENT_MIMES[extOf(file.name)]) {
+  const documentMime = DOCUMENT_MIMES[extOf(file.name)];
+  if (documentMime) {
     const { readDocument } = await import("./document-reader");
-    return { id: crypto.randomUUID(), name: file.name, mime: file.type || DOCUMENT_MIMES[extOf(file.name)], size: file.size, kind: "text", data: await readDocument(file) };
+    return { id: crypto.randomUUID(), name: file.name, mime: file.type || documentMime, size: file.size, kind: "text", data: await readDocument(file) };
   }
   const data = await new Promise<string>((res, rej) => {
     const r = new FileReader();

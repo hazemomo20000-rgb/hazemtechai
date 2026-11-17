@@ -5,6 +5,6 @@ export function reconcileChats(remote: CloudConversation[], pending: Map<string,
   for (const [id, chat] of pending) { if (chat) chats.set(id, chat); else chats.delete(id); }
   return [...chats.values()].sort((a, b) => b.updatedAt - a.updatedAt);
 }
-export function conflictCopy(chat: Conversation, id = crypto.randomUUID()): Conversation {
+export function conflictCopy(chat: Conversation, id: string = crypto.randomUUID()): Conversation {
   return { ...chat, id, title: `${chat.title} — نسخة تعارض`, updatedAt: Date.now() };
 }
