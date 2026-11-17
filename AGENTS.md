@@ -39,3 +39,5 @@ use the editor.
 - Tools use a browser-safe catalog and a one-time same-origin draft handoff to the existing chat composer. Why: reuse actual AI and attachment execution rather than fake tool results.
 - Account conversation caches are owner-keyed; database saves use revision checks, deletion tombstones and conflict copies. Why: preserve guest storage and avoid overwriting cross-device changes.
 - Device records are attendance metadata, not authoritative Auth sessions; use Auth local/others sign-out scopes for revocation. Why: respect managed Auth boundaries and disclose token expiry delays.
+- Document extraction dynamically loads browser libraries and keeps extracted text in the existing attachment payload; PDF export uses browser printing. Why: preserve Arabic shaping and the account conversation synchronization path.
+- Speech uses an authenticated server function returning SSE, sequential text chunks and durable denial state. Why: protect credits and avoid replaying denied synthesis across reloads.

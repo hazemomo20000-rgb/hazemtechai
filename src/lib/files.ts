@@ -3,6 +3,7 @@ export const MAX_FILES = 6;
 
 const IMAGE = { "image/png": ["png"], "image/jpeg": ["jpg", "jpeg"], "image/webp": ["webp"], "image/gif": ["gif"] } as const;
 const TEXT_EXT = ["txt", "md", "csv", "json", "js", "ts", "tsx", "jsx", "py", "html", "css", "xml", "yaml", "yml", "sql", "log"];
+const DOCUMENT_MIMES: Record<string, string> = { pdf: "application/pdf", docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation" };
 
 export type Attachment = {
   id: string;
@@ -25,6 +26,7 @@ export function checkFile(f: { name: string; type: string; size: number }): File
   if (f.size === 0) return { ok: false, error: `الملف "${f.name}" فارغ.` };
   if (f.size > MAX_FILE_BYTES) return { ok: false, error: `الملف "${f.name}" أكبر من 8 ميجابايت.` };
   const ext = extOf(f.name);
+  if (DOCUMENT_MIMES[ext] && (!f.type || f.type === DOCUMENT_MIMES[ext])) return { ok: true, kind: "text" };
   const imgExts = (IMAGE as Record<string, readonly string[]>)[f.type];
   if (imgExts) {
     if (!imgExts.includes(ext)) return { ok: false, error: `امتداد "${f.name}" لا يطابق نوع الصورة.` };
@@ -44,6 +46,11 @@ export function formatSize(n: number) {
 export async function readAttachment(file: File): Promise<Attachment> {
   const c = checkFile(file);
   if (!c.ok) throw new Error(c.error);
+  const documentMime = DOCUMENT_MIMES[extOf(file.name)];
+  if (documentMime) {
+    const { readDocument } = await import("./document-reader");
+    return { id: crypto.randomUUID(), name: file.name, mime: file.type || documentMime, size: file.size, kind: "text", data: await readDocument(file) };
+  }
   const data = await new Promise<string>((res, rej) => {
     const r = new FileReader();
     r.onerror = () => rej(new Error(`تعذّرت قراءة "${file.name}".`));
