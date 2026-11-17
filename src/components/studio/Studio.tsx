@@ -269,7 +269,7 @@ export function Studio() {
               placeholder="اكتب رسالتك…" title="Enter للإرسال، Shift+Enter لسطر جديد" aria-label="الرسالة"
               className="block max-h-[220px] w-full resize-none bg-transparent px-4 pt-3.5 pb-1 outline-none placeholder:text-muted-foreground" />
             <div className="flex items-center gap-1 px-2 pb-2">
-              <input ref={fileRef} type="file" multiple hidden accept="image/png,image/jpeg,image/webp,image/gif,.txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.xml,.yaml,.yml,.sql,.log"
+              <input ref={fileRef} type="file" multiple hidden accept="image/png,image/jpeg,image/webp,image/gif,.pdf,.docx,.xlsx,.pptx,.txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.xml,.yaml,.yml,.sql,.log"
                 onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }} />
               <button type="button" onClick={() => fileRef.current?.click()} className="rounded-full p-2 text-muted-foreground transition-app hover:bg-accent hover:text-foreground" aria-label="إرفاق ملف"><I.IconClip /></button>
               <button type="button" onClick={toggleVoice} aria-pressed={listening} className={`rounded-full p-2 transition-app hover:bg-accent ${listening ? "text-primary" : "text-muted-foreground hover:text-foreground"}`} aria-label={listening ? "إيقاف الإملاء" : "إملاء صوتي"}><I.IconMic /></button>

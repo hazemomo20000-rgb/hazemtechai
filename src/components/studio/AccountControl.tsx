@@ -58,7 +58,7 @@ export function AccountControl() {
       </>}
       {error && <p role="alert" className="break-words text-sm text-destructive">{error}</p>}
       <DeviceSessions/>
-      <Button variant="outline" disabled={busy} onClick={async () => { setBusy(true); setError(""); try { await queryClient.cancelQueries(); queryClient.clear(); const result = await supabase.auth.signOut({ scope: "local" }); if (result.error) throw result.error; setOpen(false); await navigate({ to: "/auth", replace: true }); } catch (e) { setError((e as Error).message); } finally { setBusy(false); } }}><LogOut/>تسجيل الخروج</Button>
+      <Button variant="outline" disabled={busy} onClick={async () => { setBusy(true); setError(""); try { await queryClient.cancelQueries(); queryClient.clear(); const result = await supabase.auth.signOut({ scope: "local" }); if (result.error) throw result.error; setOpen(false); await navigate({ to: "/auth", replace: true }); } catch (e) { setError((e as Error).message); } finally { setBusy(false); } }}><LogOut/>تسجيل الخروج من هذا الجهاز</Button>
     </DialogContent></Dialog>
   </>;
 }
