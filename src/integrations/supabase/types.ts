@@ -102,6 +102,35 @@ export type Database = {
           },
         ]
       }
+      studio_speech_access: {
+        Row: {
+          blocked: boolean
+          reason: string
+          status: number
+          user_id: string
+        }
+        Insert: {
+          blocked?: boolean
+          reason?: string
+          status?: number
+          user_id: string
+        }
+        Update: {
+          blocked?: boolean
+          reason?: string
+          status?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "studio_speech_access_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
