@@ -41,3 +41,4 @@ use the editor.
 - Device records are attendance metadata, not authoritative Auth sessions; use Auth local/others sign-out scopes for revocation. Why: respect managed Auth boundaries and disclose token expiry delays.
 - Document extraction dynamically loads browser libraries and keeps extracted text in the existing attachment payload; PDF export uses browser printing. Why: preserve Arabic shaping and the account conversation synchronization path.
 - Speech uses an authenticated server function returning SSE, sequential text chunks and durable denial state. Why: protect credits and avoid replaying denied synthesis across reloads.
+- Skills are prompt instructions: built-ins in src/lib/skills.ts, custom ones in owner-RLS studio_skills (guests: localStorage); conversations store skillIds and send resolved instructions, sanitized server-side. Why: skill choice syncs with conversations while text stays bounded.

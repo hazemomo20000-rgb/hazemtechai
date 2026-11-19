@@ -11,6 +11,8 @@ import { type Attachment, MAX_FILES, formatSize, readAttachment } from "@/lib/fi
 import { BUILTIN_MODELS, GEMINI_MODELS, findModel } from "@/lib/models";
 import { useStudioPreferences } from "@/hooks/use-studio-preferences";
 import { AccountControl } from "./AccountControl";
+import { useSkills } from "@/hooks/use-skills";
+import { MAX_ACTIVE_SKILLS, resolveSkills } from "@/lib/skills";
 import { streamGemini, validKeys } from "@/lib/gemini-client";
 import { Markdown } from "./Markdown";
 import { SettingsDialog } from "./SettingsDialog";
@@ -29,6 +31,8 @@ export function Studio() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const { prefs, updatePrefs, sync, retry } = useStudioPreferences();
   const [model, setModel] = useState(BUILTIN_MODELS[0]?.id ?? "openai/gpt-6-astra");
+  const skills = useSkills();
+  const [draftSkills, setDraftSkills] = useState<string[]>([]);
   const [input, setInput] = useState("");
   const [files, setFiles] = useState<Attachment[]>([]);
   const [busy, setBusy] = useState(false);
@@ -88,22 +92,23 @@ export function Studio() {
     if (m.provider === "gemini" && !validKeys().length) { toast.error("أضف مفتاح Gemini من الإعدادات أولاً."); setSettings(true); return; }
 
     let conv = active;
-    if (!conv) { const created = newConversation(model); conv = created; setChats((cs) => [created, ...cs]); setActiveId(created.id); }
+    if (!conv) { const created = { ...newConversation(model), skillIds: draftSkills }; conv = created; setChats((cs) => [created, ...cs]); setActiveId(created.id); }
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", text, attachments: files as any, createdAt: Date.now() };
     const botMsg: Message = { id: crypto.randomUUID(), role: "assistant", text: "", createdAt: Date.now() };
     const history = [...conv.messages.filter((x) => !x.error), userMsg];
     const cid = conv.id;
+    const activeSkills = resolveSkills(conv.skillIds, skills.all).map((s) => ({ title: s.title, instructions: s.instructions }));
     patch(cid, (c) => ({ ...c, title: c.messages.length ? c.title : titleFrom(text || files[0]?.name || ""), model, updatedAt: Date.now(), messages: [...c.messages, userMsg, botMsg] }));
     setInput(""); setFiles([]); setBusy(true);
     const ctrl = new AbortController(); abortRef.current = ctrl;
     const append = (d: string) => patch(cid, (c) => ({ ...c, messages: c.messages.map((x) => (x.id === botMsg.id ? { ...x, text: x.text + d } : x)) }));
     try {
-      if (m.provider === "gemini") await streamGemini(m.id, history, append, ctrl.signal);
+      if (m.provider === "gemini") await streamGemini(m.id, history, append, ctrl.signal, activeSkills);
       else {
         const res = await fetch("/api/chat", {
           method: "POST", signal: ctrl.signal, headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: m.id,
+            model: m.id, skills: activeSkills,
             messages: history.map((h) => ({
               role: h.role, text: h.text,
               images: (h.attachments as any[] | undefined)?.filter((a) => a.kind === "image" && a.data).map((a) => a.data),
@@ -214,6 +219,20 @@ export function Studio() {
             <PopoverContent className="w-[min(92vw,320px)] p-1.5" dir="rtl" align="start">
               <ModelGroup title="مدمج" models={BUILTIN_MODELS} value={model} onPick={setModel} enabled />
               <ModelGroup title={hasKeys ? "Gemini (مفاتيحك)" : "Gemini — يحتاج مفتاحاً من الإعدادات"} models={GEMINI_MODELS} value={model} onPick={setModel} enabled={hasKeys} />
+            </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger className="rounded-full border bg-surface px-3 py-1.5 text-sm transition-app hover:bg-surface-2" aria-label="مهارات المحادثة">
+              المهارات{(active ? active.skillIds ?? [] : draftSkills).length ? ` (${(active ? active.skillIds ?? [] : draftSkills).length})` : ""}
+            </PopoverTrigger>
+            <PopoverContent className="w-[min(92vw,320px)] space-y-1 p-2" dir="rtl" align="start">
+              <p className="px-1 pb-1 text-xs text-muted-foreground">تُطبّق على {active ? "هذه المحادثة" : "المحادثة الجديدة"} (حتى {MAX_ACTIVE_SKILLS})</p>
+              {skills.all.map((s) => { const ids = active ? active.skillIds ?? [] : draftSkills; const on = ids.includes(s.id); return (
+                <label key={s.id} className="flex cursor-pointer items-start gap-2 rounded-md p-2 text-sm hover:bg-accent">
+                  <input type="checkbox" checked={on} disabled={!on && ids.length >= MAX_ACTIVE_SKILLS} onChange={() => { const next = on ? ids.filter((x) => x !== s.id) : [...ids, s.id]; if (active) patch(active.id, (c) => ({ ...c, skillIds: next, updatedAt: Date.now() })); else setDraftSkills(next); }} className="mt-1" />
+                  <span><span className="font-medium">{s.title}</span><span className="block text-xs text-muted-foreground">{s.category}</span></span>
+                </label>); })}
+              <Link to="/skills" className="block rounded-md p-2 text-sm text-primary hover:bg-accent">إدارة المهارات</Link>
             </PopoverContent>
           </Popover>
           <span className="flex-1" />

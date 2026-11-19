@@ -1,6 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamText, type ModelMessage } from "ai";
 import { SYSTEM_PROMPT } from "./system-prompt";
+import { skillsPrompt } from "./skills";
 
 type InMsg = { role: "user" | "assistant"; text: string; images?: string[]; files?: { name: string; text: string }[] };
 const MAX_BODY = 12 * 1024 * 1024;
@@ -12,7 +13,7 @@ export async function handleChat(request: Request) {
   if (!apiKey) return json(500, "الخدمة غير مهيأة.");
   const len = Number(request.headers.get("content-length") || 0);
   if (len > MAX_BODY) return json(413, "الطلب كبير جداً.");
-  let body: { model?: string; messages?: InMsg[] };
+  let body: { model?: string; messages?: InMsg[]; skills?: unknown };
   try { body = await request.json(); } catch { return json(400, "طلب غير صالح."); }
   const model = ALLOWED.has(body.model ?? "") ? body.model! : "openai/gpt-6-astra";
   const input = Array.isArray(body.messages) ? body.messages.slice(-40) : [];
@@ -36,7 +37,7 @@ export async function handleChat(request: Request) {
   try {
     const result = streamText({
       model: provider.responses(model),
-      system: SYSTEM_PROMPT,
+      system: skillsPrompt(SYSTEM_PROMPT, body.skills),
       messages,
       abortSignal: request.signal,
       providerOptions: { openai: { store: false, forceReasoning: true, reasoningEffort: "low", reasoningSummary: "auto", include: ["reasoning.encrypted_content"] } },

@@ -16,6 +16,7 @@ export type Conversation = {
   messages: Message[];
   createdAt: number;
   updatedAt: number;
+  skillIds?: string[];
 };
 
 export const STORE_KEY = "hazem_studio_chats_v2";

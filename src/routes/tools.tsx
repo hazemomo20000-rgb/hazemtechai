@@ -20,7 +20,7 @@ function ToolsPage() {
   const [files, setFiles] = useState<Attachment[]>([]); const [error, setError] = useState(""); const [busy, setBusy] = useState(false);
   const navigate = useNavigate(); const results = filterTools(query, category, kind);
   return <main dir="rtl" className="min-h-dvh bg-background text-foreground">
-    <header className="flex items-center gap-3 border-b px-4 py-3 sm:px-8"><Button asChild variant="ghost" size="icon" aria-label="العودة للمحادثات"><Link to="/"><ArrowRight/></Link></Button><BrandMark/><span className="flex-1 font-bold">Hazem-Tech AI Studio</span><AccountControl/></header>
+    <header className="flex items-center gap-3 border-b px-4 py-3 sm:px-8"><Button asChild variant="ghost" size="icon" aria-label="العودة للمحادثات"><Link to="/"><ArrowRight/></Link></Button><BrandMark/><span className="flex-1 font-bold">Hazem-Tech AI Studio</span><Button asChild variant="ghost"><Link to="/skills">المهارات</Link></Button><AccountControl/></header>
     <section className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-8">
       <h1 className="text-3xl font-bold">الأدوات والمهارات</h1>
       <div className="flex flex-wrap items-center gap-4"><label className="relative min-w-0 flex-1"><Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground"/><Input aria-label="بحث في الأدوات والمهارات" placeholder="بحث في الأدوات والمهارات" value={query} onChange={e => setQuery(e.target.value)} className="pr-9"/></label><Tabs value={kind} onValueChange={v => { if (v === "all" || v === "tool" || v === "skill") setKind(v); }}><TabsList><TabsTrigger value="all">الكل</TabsTrigger><TabsTrigger value="tool">الأدوات</TabsTrigger><TabsTrigger value="skill">المهارات</TabsTrigger></TabsList></Tabs></div>

@@ -1,5 +1,6 @@
 // Personal Gemini keys (original feature): up to 3 keys stored in this browser, with rotation + cooldown on 429/403.
 import { SYSTEM_PROMPT } from "./system-prompt";
+import { skillsPrompt } from "./skills";
 import type { Message } from "./chat-store";
 
 export const GEMINI_KEY_STORAGE = "hazem_gemini_keys_v3";
@@ -54,7 +55,7 @@ function toContents(history: Message[]) {
   });
 }
 
-export async function streamGemini(model: string, history: Message[], onDelta: (t: string) => void, signal: AbortSignal) {
+export async function streamGemini(model: string, history: Message[], onDelta: (t: string) => void, signal: AbortSignal, skills: unknown = []) {
   let lastErr: Error | null = null;
   for (let attempt = 0; attempt < Math.max(1, validKeys().length); attempt++) {
     const key = pickKey();
@@ -62,7 +63,7 @@ export async function streamGemini(model: string, history: Message[], onDelta: (
       method: "POST",
       signal,
       headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify({ contents: toContents(history), systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] } }),
+      body: JSON.stringify({ contents: toContents(history), systemInstruction: { parts: [{ text: skillsPrompt(SYSTEM_PROMPT, skills) }] } }),
     });
     if (res.status === 429 || res.status === 403 || res.status >= 500) {
       rotate(key);
